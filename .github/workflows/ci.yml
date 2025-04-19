@@ -52,4 +52,5 @@ jobs:
             source venv/bin/activate
             pkill -f main.py || true
             nohup python3 main.py > logs.txt 2>&1 &
+            sleep 3
             echo "✅ Bot neu gestartet"
