@@ -11,67 +11,45 @@ permissions:
   contents: read
 
 jobs:
-  build-and-test:
+  build-and-deploy:
     runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          filter: tree:0
-          fetch-depth: 0
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: 'npm'
-
-      - name: 📦 Install & Build
-        run: |
-          npm ci --legacy-peer-deps
-          npx playwright install --with-deps
-
-      - uses: nrwl/nx-set-shas@v4
-
-      - name: ✅ Lint, Test, Build, E2E
-        run: npx nx affected -t lint test build e2e
-
-  deploy:
-    name: 🚀 Deploy to Netcup
-    needs: build-and-test
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/master'
 
     steps:
       - name: 📥 Checkout Repo
         uses: actions/checkout@v4
 
-      - name: 🔐 SSH to Server & Deploy
+      - name: 🔧 Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: 📦 Install dependencies
+        run: |
+          npm ci --legacy-peer-deps
+          npx playwright install --with-deps
+
+      - name: 🛠 Build frontend
+        run: npx nx build frontend
+
+      - name: 📤 Upload frontend to server
+        uses: appleboy/scp-action@v0.1.4
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.KEY }}
+          source: "dist/frontend/*"
+          target: "/root/signalbot/dist/frontend"
+
+      - name: 🚀 Restart Bot via SSH
         uses: appleboy/ssh-action@v1.0.0
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.KEY }}
           script: |
-            set -x
             cd /root/signalbot
-            echo "🔄 Git Pull"
-            git stash push -m "ci-autostash" || true
-            git pull origin main || true
-
-            echo "🐍 Python-Umgebung aktivieren"
             source venv/bin/activate
-
-            echo "🛑 Beende vorherige Instanz"
             pkill -f main.py || true
-
-            echo "🛠 Baue Frontend"
-            npx nx build frontend
-
-            echo "📦 Kopiere Build"
-            rm -rf dist/frontend/*
-            cp -r ./dist/apps/frontend/* ./dist/frontend/
-
-            echo "🚀 Starte Bot"
             nohup python3 main.py > logs.txt 2>&1 &
-
-            echo "✅ Deployment erfolgreich"
+            echo "✅ Bot neu gestartet"
