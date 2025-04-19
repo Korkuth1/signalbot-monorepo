@@ -40,17 +40,38 @@ jobs:
           key: ${{ secrets.KEY }}
           source: "dist/frontend/*"
           target: "/root/signalbot/dist/frontend"
-
-      - name: 🚀 Restart Bot via SSH
+                
+      - name: 🔐 SSH to Server & Deploy
         uses: appleboy/ssh-action@v1.0.0
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.KEY }}
           script: |
+            set -e
             cd /root/signalbot
+            echo "🔄 Git Pull"
+            git stash push -m "ci-autostash" || true
+            git pull origin main || true
+
+            echo "🐍 Python-Umgebung aktivieren"
             source venv/bin/activate
+
+            echo "🛑 Beende vorherige Instanz"
             pkill -f main.py || true
+            if [ $? -eq 143 ]; then
+              echo "SIGTERM ignoriert (Exit-Code 143)"
+              true
+            fi
+
+            echo "🛠 Baue Frontend"
+            npx nx build frontend
+
+            echo "📦 Kopiere Build"
+            rm -rf dist/frontend/*
+            cp -r ./dist/apps/frontend/* ./dist/frontend/
+
+            echo "🚀 Starte Bot"
             nohup python3 main.py > logs.txt 2>&1 &
-            sleep 3
-            echo "✅ Bot neu gestartet"
+
+            echo "✅ Deployment erfolgreich"
