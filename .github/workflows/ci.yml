@@ -11,26 +11,29 @@ permissions:
   contents: read
 
 jobs:
-  build-and-deploy:
+  build-and-test:
     runs-on: ubuntu-latest
 
     steps:
-      - name: 📥 Checkout Repo
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          filter: tree:0
+          fetch-depth: 0
 
-      - name: 🔧 Setup Node
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: 'npm'
 
-      - name: 📦 Install dependencies
+      - name: 📦 Install & Build
         run: |
           npm ci --legacy-peer-deps
           npx playwright install --with-deps
 
-      - name: 🛠 Build frontend
-        run: npx nx build frontend
+      - uses: nrwl/nx-set-shas@v4
+
+      - name: ✅ Lint, Test, Build, E2E
+        run: npx nx affected -t lint test build e2e
 
       - name: 📤 Upload frontend to server
         uses: appleboy/scp-action@v0.1.4
@@ -41,15 +44,41 @@ jobs:
           source: "dist/frontend/*"
           target: "/root/signalbot/dist/frontend"
 
-      - name: 🚀 Restart Bot via SSH
+  deploy:
+    name: 🚀 Deploy to Netcup
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/master'
+
+    steps:
+      - name: 📥 Checkout Repo
+        uses: actions/checkout@v4
+
+      - name: 🔐 SSH to Server & Deploy
         uses: appleboy/ssh-action@v1.0.0
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.KEY }}
           script: |
+            set -e
+            echo "📁 Gehe ins Projektverzeichnis"
             cd /root/signalbot
-            source venv/bin/activate
-            pkill -f main.py || true
-            nohup python3 main.py > logs.txt 2>&1 &
-            echo "✅ Bot neu gestartet"
+
+            echo "🔄 Git Pull"
+            git stash push -m "ci-autostash" || true
+            git pull origin main || true
+
+            echo "🔁 Restart via systemd"
+            sudo systemctl daemon-reexec
+            sudo systemctl restart signalbot
+
+            echo "✅ Deployment erfolgreich"
+
+            echo "🩺 Bot-Status:"
+            sudo systemctl status signalbot --no-pager || true
+
+            echo "📓 Letzte Logs:"
+            sudo journalctl -u signalbot -n 20 --no-pager || true
+
+            exit 0
