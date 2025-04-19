@@ -60,10 +60,6 @@ jobs:
             git stash push -m "ci-autostash" || true
             git pull origin main || true
 
-            echo "🛠 Baue Frontend"
-            source venv/bin/activate
-            npx nx build frontend
-
             echo "📦 Kopiere Build"
             rm -rf dist/frontend/*
             cp -r ./dist/apps/frontend/* ./dist/frontend/
