@@ -73,4 +73,11 @@ jobs:
             sudo systemctl restart signalbot
 
             echo "✅ Deployment erfolgreich"
+
+            echo "🩺 Bot-Status:"
+            sudo systemctl status signalbot --no-pager || true
+
+            echo "📓 Letzte Logs:"
+            sudo journalctl -u signalbot -n 20 --no-pager || true
+
             exit 0
