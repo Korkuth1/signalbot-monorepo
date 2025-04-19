@@ -39,7 +39,7 @@ jobs:
     name: 🚀 Deploy to Netcup
     needs: build-and-test
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'  # nur auf main branch
+    if: github.ref == 'refs/heads/master'
 
     steps:
       - name: 📥 Checkout Repo
