@@ -61,7 +61,6 @@ jobs:
             pkill -f main.py || true
             if [ $? -eq 143 ]; then
               echo "SIGTERM ignoriert (Exit-Code 143)"
-              true
             fi
 
             echo "🛠 Baue Frontend"
@@ -75,3 +74,4 @@ jobs:
             nohup python3 main.py > logs.txt 2>&1 &
 
             echo "✅ Deployment erfolgreich"
+            exit 0
