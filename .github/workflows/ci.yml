@@ -52,13 +52,26 @@ jobs:
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.KEY }}
           script: |
+            set -x
             cd /root/signalbot
+            echo "🔄 Git Pull"
             git stash push -m "ci-autostash" || true
             git pull origin main || true
+
+            echo "🐍 Python-Umgebung aktivieren"
             source venv/bin/activate
+
+            echo "🛑 Beende vorherige Instanz"
             pkill -f main.py || true
+
+            echo "🛠 Baue Frontend"
             npx nx build frontend
+
+            echo "📦 Kopiere Build"
             rm -rf dist/frontend/*
             cp -r ./dist/apps/frontend/* ./dist/frontend/
+
+            echo "🚀 Starte Bot"
             nohup python3 main.py > logs.txt 2>&1 &
-            echo "✅ Deployment finished"
+
+            echo "✅ Deployment erfolgreich"
