@@ -70,5 +70,5 @@
       "unitTestRunner": "jest"
     }
   },
-  "defaultProject": "signalbot-monorepo"
+  "defaultProject": "frontend"
 }

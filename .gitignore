@@ -1,44 +1,53 @@
-# See https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files for more about ignoring files.
+# 🔁 Node & Angular
+/node_modules/
+/dist/
+/tmp/
+/.nx/
+.nx-cache/
+.angular/
+.idea/
+*.log
 
-# compiled output
-dist
-tmp
-out-tsc
-
-# dependencies
-node_modules
-
-# IDEs and editors
-/.idea
-.project
-.classpath
-.c9/
-*.launch
-.settings/
-*.sublime-workspace
-
-# IDE - VSCode
-.vscode/*
-!.vscode/settings.json
-!.vscode/tasks.json
-!.vscode/launch.json
-!.vscode/extensions.json
-
-# misc
-/.sass-cache
-/connect.lock
-/coverage
-/libpeerconnection.log
-npm-debug.log
-yarn-error.log
-testem.log
-/typings
-
-# System Files
+# 🐍 Python
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.sqlite3
+.env
+.env.*
 .DS_Store
+
+# 🧪 Test-/Coverage-Zeug
+coverage/
+coverage-final.json
+test-results/
+
+# ⚙️ VSCode & OS
+.vscode/
+*.swp
 Thumbs.db
+ehthumbs.db
+*.bak
+*.tmp
 
-.nx/cache
-.nx/workspace-data
+# 📦 Python packaging (falls du mal ein Package machst)
+build/
+*.egg-info/
+*.egg
 
-.angular
+# 🐘 SQLite-DB
+*.db
+*.sqlite
+*.sqlite3
+
+# 🔐 Secrets
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# 🐘 GitHub Copilot / Codespaces (optional)
+.devcontainer/

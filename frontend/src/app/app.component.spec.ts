@@ -15,13 +15,13 @@ describe('AppComponent', () => {
     fixture.detectChanges();
     const compiled = fixture.nativeElement as HTMLElement;
     expect(compiled.querySelector('h1')?.textContent).toContain(
-      'Welcome signalbot-monorepo'
+      'SignalBot Dashboard'
     );
   });
 
-  it(`should have as title 'signalbot-monorepo'`, () => {
+  it(`should have as title 'frontend'`, () => {
     const fixture = TestBed.createComponent(AppComponent);
     const app = fixture.componentInstance;
-    expect(app.title).toEqual('signalbot-monorepo');
+    expect(app.title).toEqual('frontend');
   });
 });
