@@ -41,7 +41,7 @@ jobs:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.KEY }}
-          source: "dist/frontend/*"
+          source: "."
           target: "/root/signalbot/dist/frontend"
 
   deploy:
@@ -67,7 +67,7 @@ jobs:
 
             echo "🔄 Git Pull"
             git stash push -m "ci-autostash" || true
-            git pull origin main || true
+            git pull origin master || true
 
             echo "🔁 Restart via systemd"
             sudo systemctl daemon-reexec
